@@ -14,9 +14,12 @@ import org.apache.hadoop.mapreduce.lib.input.CombineFileSplit;
 
 
 public class CustomCombineFileInputFormat extends CombineFileInputFormat<FileLineWritable, Text> {
+    
+    static final int MAX_SPLIT_SIZE = 64 << 20;
+
     public CustomCombineFileInputFormat(){
         super();
-        setMaxSplitSize(67108864); // 64 MB, default block size on hadoop
+        setMaxSplitSize(MAX_SPLIT_SIZE); // 64 MB, default block size on hadoop
     }
 
     public RecordReader<FileLineWritable, Text> createRecordReader(InputSplit split, TaskAttemptContext context) throws IOException{

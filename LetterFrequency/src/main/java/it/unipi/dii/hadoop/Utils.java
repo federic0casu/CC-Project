@@ -17,6 +17,7 @@ public class Utils {
                     'm', 'n', 'o', 'p', 'q', 'r', 's',
                     't', 'u', 'v', 'w', 'x', 'y', 'z');
 
+
     public static long readLetterCountValue(FileSystem fs, Path configPath) throws IOException {
         try (FSDataInputStream inputStream = fs.open(configPath);
              BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
