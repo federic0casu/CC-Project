@@ -9,15 +9,11 @@ import org.apache.hadoop.mapreduce.Reducer;
 import java.io.IOException;
 
 public class LetterFrequencyReducer
-        extends Reducer<Text, IntWritable, Text, DoubleWritable> {
+        extends Reducer<Text, IntWritable, Text, IntWritable> {
 
-    private int count;
 
     @Override
     protected void setup(Context context) throws IOException, InterruptedException {
-        Configuration conf = context.getConfiguration();
-        // Read a parameter
-        count = Integer.parseInt(conf.get("letter_count"));
     }
 
     @Override
@@ -26,7 +22,7 @@ public class LetterFrequencyReducer
         for (IntWritable val : values) {
             occurrences += val.get();
         }
-        context.write(key, new DoubleWritable((double) occurrences / count));
+        context.write(key, new IntWritable(occurrences));
     }
 
     @Override
