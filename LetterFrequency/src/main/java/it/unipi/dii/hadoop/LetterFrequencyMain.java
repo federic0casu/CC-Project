@@ -63,6 +63,10 @@ public class LetterFrequencyMain {
         if (NUM_TASKS_JVM > 1)
             conf.set("mapred.job.reuse.jvm.num.tasks", Integer.toString(NUM_TASKS_JVM));
 
+
+
+        double startTime = System.nanoTime();
+
         // Count number of total letter job
         Job frequencyJob = Job.getInstance(conf);
         frequencyJob.setJarByClass(LetterFrequencyMain.class);
@@ -82,6 +86,8 @@ public class LetterFrequencyMain {
         // define reducer's output key-value
         frequencyJob.setOutputKeyClass(Text.class);
         frequencyJob.setOutputValueClass(IntWritable.class);
+
+        
 
         FileInputFormat.addInputPath(frequencyJob, new Path(inputPath));
         FileOutputFormat.setOutputPath(frequencyJob, new Path(frequencyJobOutputPath));
@@ -115,6 +121,9 @@ public class LetterFrequencyMain {
         FileOutputFormat.setOutputPath(relativeFrequencyJob, new Path(relativeFrequencyJobOutputPath));
 
         exitStatus = relativeFrequencyJob.waitForCompletion(true) ? 0 : 1;
+        
+        double execTime =(System.nanoTime() - startTime) / 1000000000; 
+        
         System.exit(exitStatus);
     }
 }
