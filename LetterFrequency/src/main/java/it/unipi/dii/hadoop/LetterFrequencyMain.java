@@ -122,8 +122,9 @@ public class LetterFrequencyMain {
 
         exitStatus = relativeFrequencyJob.waitForCompletion(true) ? 0 : 1;
         
-        double execTime =(System.nanoTime() - startTime) / 1000000000; 
-        
+        double execTime =(System.nanoTime() - startTime) / 1000000000.0; 
+        System.out.println("Tempo di esecuzione di mapreduce opt: " + execTime);
+
         System.exit(exitStatus);
     }
 }
