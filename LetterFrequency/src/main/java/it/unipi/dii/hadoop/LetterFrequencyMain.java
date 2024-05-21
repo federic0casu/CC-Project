@@ -23,43 +23,47 @@ import java.io.OutputStreamWriter;
 
 
 public class LetterFrequencyMain {
-    private static final Configuration conf = new Configuration();
-    private static final String countJobStatsPath = "/CC-Project/stats/count_job.stats";
-    private static final String frequencyJobStatsPath = "/CC-Project/stats/frequency_job.stats";
+    private static final String countJobStatsPath         = "/CC-Project/stats/count_job.stats";
+    private static final String countMapperStatsPath      = "/CC-Project/stats/count_mappers.stats";
+    private static final String countReducerStatsPath     = "/CC-Project/stats/count_reducers.stats";
+    private static final String frequencyJobStatsPath     = "/CC-Project/stats/frequency_job.stats";
+    private static final String frequencyMapperStatsPath  = "/CC-Project/stats/frequency_mappers.stats";
+    private static final String frequencyReducerStatsPath = "/CC-Project/stats/frequency_reducers.stats";
+    private static String INPUT_PATH;
+    private static String COUNT_JOB_OUTPUT;
+    private static String FREQUENCY_JIB_OUTPUT;
+    private static int CUSTOM_INPUT_SPLIT;
+    private static int NUM_REDUCERS;
+    private static int RUN;
 
     public static void main(String[] args) throws Exception {
-        if (args.length < 7) {
+        if (args.length < 6) {
             System.err.println("Usage: LetterFrequencyMain " +
                     "<input path> <output path countJob> <output path frequencyJob> " +
-                    "<CustomInputSplit [1/0]> <#tasks per JVM> <#num Reducers> <#run>");
+                    "<CustomInputSplit [1/0]> <#num Reducers> <#run>");
             System.exit(1);
         }
 
-        String inputPath              = args[0];
-        String countJobOutputPath     = args[1];
-        String frequencyJobOutputPath = args[2];
+        Configuration conf = new Configuration();
+        conf.setStrings("COUNT_MAPPERS_STATS", countMapperStatsPath);
+        conf.setStrings("COUNT_REDUCERS_STATS", countReducerStatsPath);
+        conf.setStrings("FREQUENCY_MAPPERS_STATS", frequencyMapperStatsPath);
+        conf.setStrings("FREQUENCY_REDUCERS_STATS", frequencyReducerStatsPath);
 
-        int CUSTOM_INPUT_SPLIT = Integer.parseInt(args[3]);
-        int NUM_TASKS_JVM      = Integer.parseInt(args[4]);
-        int NUM_REDUCERS       = Integer.parseInt(args[5]);
-        int RUN                = Integer.parseInt(args[6]);
+        INPUT_PATH           = args[0];
+        COUNT_JOB_OUTPUT     = args[1];
+        FREQUENCY_JIB_OUTPUT = args[2];
+        CUSTOM_INPUT_SPLIT   = Integer.parseInt(args[3]);
+        NUM_REDUCERS         = Integer.parseInt(args[4]);
+        RUN                  = Integer.parseInt(args[5]);
+
+        conf.setLong("CUSTOM_INPUT_SPLIT", CUSTOM_INPUT_SPLIT);
+        conf.setLong("NUM_REDUCERS", NUM_REDUCERS);
+        conf.setLong("RUN", RUN);
 
         // DEBUG
-        System.out.println("########## MAP REDUCE BASED LETTER FREQUENCY ##########");
-        System.out.println("You provided the following arguments:");
-        System.out.println("\tinput path:              " + inputPath);
-        System.out.println("\toutput path [count]:     " + countJobOutputPath);
-        System.out.println("\toutput path [frequency]: " + frequencyJobOutputPath);
-        System.out.println("\tCustomInputSplit [1/0]:  " + CUSTOM_INPUT_SPLIT);
-        System.out.println("\tnumber of tasks per JVM: " + NUM_TASKS_JVM);
-        System.out.println("\tnumber of Reducers:      " + NUM_REDUCERS);
-        System.out.println("\trun:                     " + RUN);
-        System.out.println("#######################################################");
+        printArguments();
         // DEBUG
-
-        // Setting number of task per spawned JVM
-        if (NUM_TASKS_JVM > 1)
-            conf.set("mapred.job.reuse.jvm.num.tasks", Integer.toString(NUM_TASKS_JVM));
 
         // Count number of total letter job
         Job countJob = Job.getInstance(conf);
@@ -81,8 +85,8 @@ public class LetterFrequencyMain {
         countJob.setOutputKeyClass(Text.class);
         countJob.setOutputValueClass(IntWritable.class);
 
-        FileInputFormat.addInputPath(countJob, new Path(inputPath));
-        FileOutputFormat.setOutputPath(countJob, new Path(countJobOutputPath));
+        FileInputFormat.addInputPath(countJob, new Path(INPUT_PATH));
+        FileOutputFormat.setOutputPath(countJob, new Path(COUNT_JOB_OUTPUT));
 
         // Record time to measure count Job performances
         long countJobStartTime = System.nanoTime();
@@ -91,18 +95,10 @@ public class LetterFrequencyMain {
         if (exitStatus == 1) {
             System.exit(1);
         }
-        writeStats(countJobStatsPath, RUN, countJobExecTime, CUSTOM_INPUT_SPLIT, NUM_TASKS_JVM);
+        writeStats(conf, countJobStatsPath, countJobExecTime);
 
         // Load output of countJob from HDFS
-        try {
-            FileSystem fs = FileSystem.get(conf);
-            Path outputPath = new Path(countJobOutputPath + "/part-r-00000");
-            long letter_count = Utils.readLetterCountValue(fs, outputPath);
-            conf.setLong("letter_count", letter_count);
-        } catch (IOException e) {
-            System.err.println("Error loading configuration file from HDFS: " + e.getMessage());
-            System.exit(1);
-        }
+        loadLetterCountFromHDFS(conf, COUNT_JOB_OUTPUT);
 
         // Letter frequency job
         Job frequencyJob = Job.getInstance(conf);
@@ -124,31 +120,54 @@ public class LetterFrequencyMain {
         frequencyJob.setOutputKeyClass(Text.class);
         frequencyJob.setOutputValueClass(DoubleWritable.class);
 
-        FileInputFormat.addInputPath(frequencyJob, new Path(inputPath));
-        FileOutputFormat.setOutputPath(frequencyJob, new Path(frequencyJobOutputPath));
+        FileInputFormat.addInputPath(frequencyJob, new Path(INPUT_PATH));
+        FileOutputFormat.setOutputPath(frequencyJob, new Path(FREQUENCY_JIB_OUTPUT));
 
         // Record time to measure frequency Job performances
         long frequencyJobStartTime = System.nanoTime();
         exitStatus = frequencyJob.waitForCompletion(true) ? 0 : 1;
         double frequencyJobExecTime = (System.nanoTime() - frequencyJobStartTime) / 1000000000.0;
-        writeStats(frequencyJobStatsPath, RUN, frequencyJobExecTime, CUSTOM_INPUT_SPLIT, NUM_TASKS_JVM);
+        writeStats(conf, frequencyJobStatsPath, frequencyJobExecTime);
 
         System.exit(exitStatus);
     }
 
-    private static void writeStats(String logPath, int run, double time, int customInputSplit, int tasksJVM)
+    private static void loadLetterCountFromHDFS(Configuration conf, String outputPath) throws IOException {
+        try (FileSystem fs = FileSystem.get(conf)) {
+            Path path = new Path(outputPath + "/part-r-00000");
+            long count = Utils.readLetterCountValue(fs, path);
+            conf.setLong("LETTER_COUNT", count);
+        } catch (IOException e) {
+            System.err.println("Error loading letter count from HDFS: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    private static void writeStats(Configuration conf, String logPath, double time)
             throws IOException {
         try (FileSystem fs = FileSystem.get(conf)) {
             FSDataOutputStream out = fs.append(new Path(logPath));
             BufferedWriter br = new BufferedWriter(new OutputStreamWriter(out));
 
-            br.write(run + ",");
+            br.write(RUN + ",");
             br.write(time + ",");
-            br.write(customInputSplit  + ",");
-            br.write(tasksJVM + "\n");
+            br.write(CUSTOM_INPUT_SPLIT  + ",");
+            br.write(NUM_REDUCERS + "\n");
 
             br.close();
         }
+    }
+
+    private static void printArguments() {
+        System.out.println("############ MAP REDUCE BASED LETTER FREQUENCY ############");
+        System.out.println("You provided the following arguments:");
+        System.out.println("\tinput path:              " + INPUT_PATH);
+        System.out.println("\toutput path [count]:     " + COUNT_JOB_OUTPUT);
+        System.out.println("\toutput path [frequency]: " + FREQUENCY_JIB_OUTPUT);
+        System.out.println("\tCustomInputSplit [1/0]:  " + CUSTOM_INPUT_SPLIT);
+        System.out.println("\tnumber of Reducers:      " + NUM_REDUCERS);
+        System.out.println("\trun:                     " + RUN);
+        System.out.println("###########################################################");
     }
 
 }

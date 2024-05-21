@@ -1,23 +1,41 @@
 package it.unipi.dii.hadoop.Reducer;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 
 public class LetterFrequencyReducer
         extends Reducer<Text, IntWritable, Text, DoubleWritable> {
 
+    private Configuration conf;
+    private String statsPath;
+    private long startTime;
+    private int custom_input_split;
+    private int num_reducers;
     private int count;
+    private int run;
 
     @Override
     protected void setup(Context context) throws IOException, InterruptedException {
-        Configuration conf = context.getConfiguration();
-        // Read a parameter
-        count = Integer.parseInt(conf.get("letter_count"));
+        conf = context.getConfiguration();
+
+        run = Integer.parseInt(conf.get("RUN"));
+        count = Integer.parseInt(conf.get("LETTER_COUNT"));
+        num_reducers = Integer.parseInt(conf.get("NUM_REDUCERS"));
+        custom_input_split = Integer.parseInt(conf.get("CUSTOM_INPUT_SPLIT"));
+
+        statsPath = conf.get("FREQUENCY_REDUCERS_STATS");
+
+        startTime = System.nanoTime();
     }
 
     @Override
@@ -31,6 +49,22 @@ public class LetterFrequencyReducer
 
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
-        // TODO
+        double execTime = (System.nanoTime() - startTime) / 1_000_000_000.0;
+        writeStats(execTime);
+    }
+
+    private void writeStats(double time)
+            throws IOException {
+        try (FileSystem fs = FileSystem.get(conf)) {
+            FSDataOutputStream out = fs.append(new Path(statsPath));
+            BufferedWriter br = new BufferedWriter(new OutputStreamWriter(out));
+
+            br.write(run + ",");
+            br.write(time + ",");
+            br.write(custom_input_split  + ",");
+            br.write(num_reducers + "\n");
+
+            br.close();
+        }
     }
 }
