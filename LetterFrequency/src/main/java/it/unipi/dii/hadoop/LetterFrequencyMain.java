@@ -89,9 +89,9 @@ public class LetterFrequencyMain {
         FileOutputFormat.setOutputPath(countJob, new Path(COUNT_JOB_OUTPUT));
 
         // Record time to measure count Job performances
-        long countJobStartTime = System.nanoTime();
+        long StartTime = System.nanoTime();
         int exitStatus = countJob.waitForCompletion(true) ? 0 : 1;
-        double countJobExecTime = (System.nanoTime() - countJobStartTime) / 1000000000.0;
+
         if (exitStatus == 1) {
             System.exit(1);
         }
@@ -124,7 +124,6 @@ public class LetterFrequencyMain {
         FileOutputFormat.setOutputPath(frequencyJob, new Path(FREQUENCY_JIB_OUTPUT));
 
         // Record time to measure frequency Job performances
-        long frequencyJobStartTime = System.nanoTime();
         exitStatus = frequencyJob.waitForCompletion(true) ? 0 : 1;
         double frequencyJobExecTime = (System.nanoTime() - frequencyJobStartTime) / 1000000000.0;
         writeStats(conf, frequencyJobStatsPath, frequencyJobExecTime);
