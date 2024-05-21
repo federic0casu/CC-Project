@@ -85,13 +85,13 @@ public class LetterFrequencyMain {
         FileOutputFormat.setOutputPath(countJob, new Path(countJobOutputPath));
 
         // Record time to measure count Job performances
-        long countJobStartTime = System.nanoTime();
+        long StartTime = System.nanoTime();
         int exitStatus = countJob.waitForCompletion(true) ? 0 : 1;
-        double countJobExecTime = (System.nanoTime() - countJobStartTime) / 1000000000.0;
+
         if (exitStatus == 1) {
             System.exit(1);
         }
-        writeStats(countJobStatsPath, RUN, countJobExecTime, CUSTOM_INPUT_SPLIT, NUM_TASKS_JVM);
+        // writeStats(countJobStatsPath, RUN, countJobExecTime, CUSTOM_INPUT_SPLIT, NUM_TASKS_JVM);
 
         // Load output of countJob from HDFS
         try {
@@ -128,10 +128,13 @@ public class LetterFrequencyMain {
         FileOutputFormat.setOutputPath(frequencyJob, new Path(frequencyJobOutputPath));
 
         // Record time to measure frequency Job performances
-        long frequencyJobStartTime = System.nanoTime();
         exitStatus = frequencyJob.waitForCompletion(true) ? 0 : 1;
-        double frequencyJobExecTime = (System.nanoTime() - frequencyJobStartTime) / 1000000000.0;
-        writeStats(frequencyJobStatsPath, RUN, frequencyJobExecTime, CUSTOM_INPUT_SPLIT, NUM_TASKS_JVM);
+        double ExecTime = (System.nanoTime() - StartTime) / 1000000000.0;
+        
+        System.out.println("\tTotal mapreduce program execution time:      " + ExecTime);
+        
+        
+        // writeStats(frequencyJobStatsPath, RUN, frequencyJobExecTime, CUSTOM_INPUT_SPLIT, NUM_TASKS_JVM);
 
         System.exit(exitStatus);
     }
