@@ -19,9 +19,10 @@ public class LetterFrequencyReducer
     private Configuration conf;
     private String statsPath;
     private long startTime;
+    private long count;
     private int custom_input_split;
     private int num_reducers;
-    private int count;
+    private int dim_dataset;
     private int run;
 
     @Override
@@ -31,6 +32,7 @@ public class LetterFrequencyReducer
         run = Integer.parseInt(conf.get("RUN"));
         count = Integer.parseInt(conf.get("LETTER_COUNT"));
         num_reducers = Integer.parseInt(conf.get("NUM_REDUCERS"));
+        dim_dataset = Integer.parseInt(conf.get("DIM_DATASET"));
         custom_input_split = Integer.parseInt(conf.get("CUSTOM_INPUT_SPLIT"));
 
         statsPath = conf.get("FREQUENCY_REDUCERS_STATS");
@@ -62,7 +64,8 @@ public class LetterFrequencyReducer
             br.write(run + ",");
             br.write(time + ",");
             br.write(custom_input_split  + ",");
-            br.write(num_reducers + "\n");
+            br.write(num_reducers + ",");
+            br.write(dim_dataset + "MB\n");
 
             br.close();
         }

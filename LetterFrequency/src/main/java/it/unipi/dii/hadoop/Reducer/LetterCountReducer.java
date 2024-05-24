@@ -22,6 +22,7 @@ public class LetterCountReducer
     private long startTime;
     private int custom_input_split;
     private int num_reducers;
+    private int dim_dataset;
     private int run;
 
     @Override
@@ -30,6 +31,7 @@ public class LetterCountReducer
 
         run = Integer.parseInt(conf.get("RUN"));
         num_reducers = Integer.parseInt(conf.get("NUM_REDUCERS"));
+        dim_dataset = Integer.parseInt(conf.get("DIM_DATASET"));
         custom_input_split = Integer.parseInt(conf.get("CUSTOM_INPUT_SPLIT"));
         statsPath = conf.get("COUNT_REDUCERS_STATS");
 
@@ -63,7 +65,8 @@ public class LetterCountReducer
             br.write(run + ",");
             br.write(time + ",");
             br.write(custom_input_split  + ",");
-            br.write(num_reducers + "\n");
+            br.write(num_reducers + ",");
+            br.write(dim_dataset + "MB\n");
 
             br.close();
         }

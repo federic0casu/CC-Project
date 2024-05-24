@@ -7,6 +7,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.TaskAttemptID;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -21,9 +22,11 @@ public class LetterCountMapper
 
     private Configuration conf;
     private String statsPath;
+    private String ID;
     private long startTime;
     private int custom_input_split;
     private int num_reducers;
+    private int dim_dataset;
     private int run;
 
     @Override
@@ -34,8 +37,19 @@ public class LetterCountMapper
 
         run = Integer.parseInt(conf.get("RUN"));
         num_reducers = Integer.parseInt(conf.get("NUM_REDUCERS"));
+        dim_dataset = Integer.parseInt(conf.get("DIM_DATASET"));
         custom_input_split = Integer.parseInt(conf.get("CUSTOM_INPUT_SPLIT"));
         statsPath = conf.get("COUNT_MAPPERS_STATS");
+
+        // Get TaskAttemptID for unique identifier generation (if needed)
+        TaskAttemptID taskAttemptID = context.getTaskAttemptID();
+        ID = taskAttemptID.toString() + "_" + run + "_" + num_reducers + "_" + dim_dataset + "MB";
+
+        // DEBUG
+        System.out.println("############ MAP REDUCE BASED LETTER FREQUENCY ############");
+        System.out.println("LetterCountMapper::setup() >> " + ID);
+        System.out.println("###########################################################");
+        // DEBUG
 
         startTime = System.nanoTime();
     }
@@ -69,7 +83,8 @@ public class LetterCountMapper
             br.write(run + ",");
             br.write(time + ",");
             br.write(custom_input_split  + ",");
-            br.write(num_reducers + "\n");
+            br.write(num_reducers + ",");
+            br.write(dim_dataset + "MB\n");
 
             br.close();
         }

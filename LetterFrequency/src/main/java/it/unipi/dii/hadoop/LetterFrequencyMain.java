@@ -31,16 +31,17 @@ public class LetterFrequencyMain {
     private static final String frequencyReducerStatsPath = "/CC-Project/stats/frequency_reducers.stats";
     private static String INPUT_PATH;
     private static String COUNT_JOB_OUTPUT;
-    private static String FREQUENCY_JIB_OUTPUT;
+    private static String FREQUENCY_JOB_OUTPUT;
     private static int CUSTOM_INPUT_SPLIT;
     private static int NUM_REDUCERS;
+    private static int DIM_DATASET;
     private static int RUN;
 
     public static void main(String[] args) throws Exception {
-        if (args.length < 6) {
+        if (args.length < 7) {
             System.err.println("Usage: LetterFrequencyMain " +
                     "<input path> <output path countJob> <output path frequencyJob> " +
-                    "<CustomInputSplit [1/0]> <#num Reducers> <#run>");
+                    "<CustomInputSplit [1/0]> <#num Reducers> <#run> <#sub-dirs>");
             System.exit(1);
         }
 
@@ -52,19 +53,22 @@ public class LetterFrequencyMain {
 
         INPUT_PATH           = args[0];
         COUNT_JOB_OUTPUT     = args[1];
-        FREQUENCY_JIB_OUTPUT = args[2];
+        FREQUENCY_JOB_OUTPUT = args[2];
         CUSTOM_INPUT_SPLIT   = Integer.parseInt(args[3]);
         NUM_REDUCERS         = Integer.parseInt(args[4]);
         RUN                  = Integer.parseInt(args[5]);
+        DIM_DATASET          = Integer.parseInt(args[6]);
 
         conf.setLong("CUSTOM_INPUT_SPLIT", CUSTOM_INPUT_SPLIT);
         conf.setLong("NUM_REDUCERS", NUM_REDUCERS);
+        conf.setLong("DIM_DATASET", DIM_DATASET * 200L);
         conf.setLong("RUN", RUN);
 
         // DEBUG
         printArguments();
         // DEBUG
 
+        // //////////////////// STAGE 1 ////////////////////
         // Count number of total letter job
         Job countJob = Job.getInstance(conf);
         countJob.setJarByClass(LetterFrequencyMain.class);
@@ -74,8 +78,9 @@ public class LetterFrequencyMain {
         countJob.setReducerClass(LetterCountReducer.class);
 
         // Setting CombineFileInputSplit
-        if (CUSTOM_INPUT_SPLIT == 1)
+        if (CUSTOM_INPUT_SPLIT == 1) {
             countJob.setInputFormatClass(CustomCombineFileInputFormat.class);
+        }
 
         // define mapper's output key-value
         countJob.setMapOutputKeyClass(Text.class);
@@ -85,12 +90,16 @@ public class LetterFrequencyMain {
         countJob.setOutputKeyClass(Text.class);
         countJob.setOutputValueClass(IntWritable.class);
 
-        FileInputFormat.addInputPath(countJob, new Path(INPUT_PATH));
+        // DIM_DATASET can be 1, 2, 4, or 6
+        for (int i = 1; i <= DIM_DATASET; i++)
+            FileInputFormat.addInputPath(countJob, new Path(INPUT_PATH + "/" + i));
+
         FileOutputFormat.setOutputPath(countJob, new Path(COUNT_JOB_OUTPUT));
 
         // Record time to measure count Job performances
-        long StartTime = System.nanoTime();
+        long countJobStartTime = System.nanoTime();
         int exitStatus = countJob.waitForCompletion(true) ? 0 : 1;
+        double countJobExecTime = (System.nanoTime() - countJobStartTime) / 1000000000.0;
 
         if (exitStatus == 1) {
             System.exit(1);
@@ -100,17 +109,20 @@ public class LetterFrequencyMain {
         // Load output of countJob from HDFS
         loadLetterCountFromHDFS(conf, COUNT_JOB_OUTPUT);
 
+
+        // //////////////////// STAGE 2 ////////////////////
         // Letter frequency job
         Job frequencyJob = Job.getInstance(conf);
         frequencyJob.setJarByClass(LetterFrequencyMain.class);
         frequencyJob.setJobName("Letter Frequency analyzer Hadoop-based");
 
-        // Setting CombineFileInputSplit
-        if (CUSTOM_INPUT_SPLIT == 1)
-            frequencyJob.setInputFormatClass(CustomCombineFileInputFormat.class);
-
         frequencyJob.setMapperClass(LetterFrequencyMapper.class);
         frequencyJob.setReducerClass(LetterFrequencyReducer.class);
+
+        // Setting CombineFileInputSplit
+        if (CUSTOM_INPUT_SPLIT == 1) {
+            frequencyJob.setInputFormatClass(CustomCombineFileInputFormat.class);
+        }
 
         // define mapper's output key-value
         frequencyJob.setMapOutputKeyClass(Text.class);
@@ -120,10 +132,14 @@ public class LetterFrequencyMain {
         frequencyJob.setOutputKeyClass(Text.class);
         frequencyJob.setOutputValueClass(DoubleWritable.class);
 
-        FileInputFormat.addInputPath(frequencyJob, new Path(INPUT_PATH));
-        FileOutputFormat.setOutputPath(frequencyJob, new Path(FREQUENCY_JIB_OUTPUT));
+        // DIM_DATASET can be 1, 2, 4, or 6
+        for (int i = 1; i <= DIM_DATASET; i++)
+            FileInputFormat.addInputPath(frequencyJob, new Path(INPUT_PATH + "/" + i));
+
+        FileOutputFormat.setOutputPath(frequencyJob, new Path(FREQUENCY_JOB_OUTPUT));
 
         // Record time to measure frequency Job performances
+        double frequencyJobStartTime = System.nanoTime();
         exitStatus = frequencyJob.waitForCompletion(true) ? 0 : 1;
         double frequencyJobExecTime = (System.nanoTime() - frequencyJobStartTime) / 1000000000.0;
         writeStats(conf, frequencyJobStatsPath, frequencyJobExecTime);
@@ -136,6 +152,13 @@ public class LetterFrequencyMain {
             Path path = new Path(outputPath + "/part-r-00000");
             long count = Utils.readLetterCountValue(fs, path);
             conf.setLong("LETTER_COUNT", count);
+
+            // DEBUG
+            System.out.println("############ MAP REDUCE BASED LETTER FREQUENCY ############");
+            System.out.println("Intermediate output path: " + outputPath + "/part-r-00000");
+            System.out.println("Total number of letters:  " + count);
+            System.out.println("###########################################################");
+            // DEBUG
         } catch (IOException e) {
             System.err.println("Error loading letter count from HDFS: " + e.getMessage());
             throw e;
@@ -151,7 +174,8 @@ public class LetterFrequencyMain {
             br.write(RUN + ",");
             br.write(time + ",");
             br.write(CUSTOM_INPUT_SPLIT  + ",");
-            br.write(NUM_REDUCERS + "\n");
+            br.write(NUM_REDUCERS + ",");
+            br.write(DIM_DATASET + "MB\n");
 
             br.close();
         }
@@ -162,9 +186,10 @@ public class LetterFrequencyMain {
         System.out.println("You provided the following arguments:");
         System.out.println("\tinput path:              " + INPUT_PATH);
         System.out.println("\toutput path [count]:     " + COUNT_JOB_OUTPUT);
-        System.out.println("\toutput path [frequency]: " + FREQUENCY_JIB_OUTPUT);
+        System.out.println("\toutput path [frequency]: " + FREQUENCY_JOB_OUTPUT);
         System.out.println("\tCustomInputSplit [1/0]:  " + CUSTOM_INPUT_SPLIT);
         System.out.println("\tnumber of Reducers:      " + NUM_REDUCERS);
+        System.out.println("\tdataset [MB]:            " + DIM_DATASET * 200);
         System.out.println("\trun:                     " + RUN);
         System.out.println("###########################################################");
     }
