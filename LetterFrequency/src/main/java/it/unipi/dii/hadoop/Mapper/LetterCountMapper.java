@@ -22,7 +22,6 @@ public class LetterCountMapper
 
     private Configuration conf;
     private String statsPath;
-    private String ID;
     private long startTime;
     private int custom_input_split;
     private int num_reducers;
@@ -45,12 +44,6 @@ public class LetterCountMapper
         TaskAttemptID taskAttemptID = context.getTaskAttemptID();
         ID = taskAttemptID.toString() + "_" + run + "_" + num_reducers + "_" + dim_dataset + "MB";
 
-        // DEBUG
-        System.out.println("############ MAP REDUCE BASED LETTER FREQUENCY ############");
-        System.out.println("LetterCountMapper::setup() >> " + ID);
-        System.out.println("###########################################################");
-        // DEBUG
-
         startTime = System.nanoTime();
     }
 
@@ -71,20 +64,27 @@ public class LetterCountMapper
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
         double execTime = (System.nanoTime() - startTime) / 1_000_000_000.0;
-        writeStats(execTime);
+        writeStats(context, execTime);
     }
 
-    private void writeStats(double time)
+    private void writeStats(Context context, double time)
             throws IOException {
+        // Get TaskAttemptID
+        TaskAttemptID taskAttemptID = context.getTaskAttemptID();
+        String filePath = statsPath + taskAttemptID.toString() + "_" + run +  ".csv";
+
         try (FileSystem fs = FileSystem.get(conf)) {
-            FSDataOutputStream out = fs.append(new Path(statsPath));
+            // Use createNewFile to create a new file for each task attempt
+            FSDataOutputStream out = fs.create(new Path(filePath));
             BufferedWriter br = new BufferedWriter(new OutputStreamWriter(out));
 
-            br.write(run + ",");
-            br.write(time + ",");
-            br.write(custom_input_split  + ",");
-            br.write(num_reducers + ",");
-            br.write(dim_dataset + "MB\n");
+            // Write .csv header
+            br.write("run,time,custom-input-split,num-reducers,dim-dataset\n");
+
+            // Write statistics data
+            br.write(
+                    run + "," + time + "," + custom_input_split + "," + num_reducers + "," + dim_dataset + "\n"
+            );
 
             br.close();
         }

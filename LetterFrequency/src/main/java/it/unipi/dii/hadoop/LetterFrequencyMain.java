@@ -23,12 +23,12 @@ import java.io.OutputStreamWriter;
 
 
 public class LetterFrequencyMain {
-    private static final String countJobStatsPath         = "/CC-Project/stats/count_job.stats";
-    private static final String countMapperStatsPath      = "/CC-Project/stats/count_mappers.stats";
-    private static final String countReducerStatsPath     = "/CC-Project/stats/count_reducers.stats";
-    private static final String frequencyJobStatsPath     = "/CC-Project/stats/frequency_job.stats";
-    private static final String frequencyMapperStatsPath  = "/CC-Project/stats/frequency_mappers.stats";
-    private static final String frequencyReducerStatsPath = "/CC-Project/stats/frequency_reducers.stats";
+    private static final String countJobStatsPath         = "/CC-Project/stats/count_job/";
+    private static final String countMapperStatsPath      = "/CC-Project/stats/count_mappers/";
+    private static final String countReducerStatsPath     = "/CC-Project/stats/count_reducers/";
+    private static final String frequencyJobStatsPath     = "/CC-Project/stats/frequency_job/";
+    private static final String frequencyMapperStatsPath  = "/CC-Project/stats/frequency_mappers/";
+    private static final String frequencyReducerStatsPath = "/CC-Project/stats/frequency_reducers/";
     private static String INPUT_PATH;
     private static String COUNT_JOB_OUTPUT;
     private static String FREQUENCY_JOB_OUTPUT;
@@ -167,17 +167,37 @@ public class LetterFrequencyMain {
 
     private static void writeStats(Configuration conf, String logPath, double time)
             throws IOException {
+        String filePathName = logPath + (DIM_DATASET * 200) + "MB.csv";
+        Path filePath = new Path(filePathName);
+
         try (FileSystem fs = FileSystem.get(conf)) {
-            FSDataOutputStream out = fs.append(new Path(logPath));
-            BufferedWriter br = new BufferedWriter(new OutputStreamWriter(out));
+            if (!fs.exists(filePath)) {
+                if (!fs.createNewFile(filePath))
+                    throw new IOException("Could not create file " + filePathName);
 
-            br.write(RUN + ",");
-            br.write(time + ",");
-            br.write(CUSTOM_INPUT_SPLIT  + ",");
-            br.write(NUM_REDUCERS + ",");
-            br.write(DIM_DATASET + "MB\n");
+                FSDataOutputStream out = fs.append(filePath);
+                BufferedWriter br = new BufferedWriter(new OutputStreamWriter(out));
 
-            br.close();
+                // Write .csv header
+                br.write("run,time,custom-input-split,num-reducers,dim-dataset\n");
+
+                // Write statistics data
+                br.write(
+                        RUN + "," + time + "," + CUSTOM_INPUT_SPLIT + "," + NUM_REDUCERS + "," + DIM_DATASET + "\n"
+                );
+
+                br.close();
+            } else {
+                FSDataOutputStream out = fs.append(filePath);
+                BufferedWriter br = new BufferedWriter(new OutputStreamWriter(out));
+
+                // Write statistics data
+                br.write(
+                        RUN + "," + time + "," + CUSTOM_INPUT_SPLIT + "," + NUM_REDUCERS + "," + DIM_DATASET + "\n"
+                );
+
+                br.close();
+            }
         }
     }
 
