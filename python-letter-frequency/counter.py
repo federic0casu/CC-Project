@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 
 class Counter:
-    def __init__(self, to_analyze: list=None):
+    def __init__(self, to_analyze: list=None, output_file: str='frequency'):
         self.__letters = {'a','b','c','d','e',
                           'f','g','h','i','j',
                           'k','l','m','n','o',
@@ -10,6 +10,7 @@ class Counter:
                           'z'}
         self.__frequency = [0] * 26
         self.__count = 0
+        self.__output = output_file
         self.__to_analyze = to_analyze
     
     def analyze(self):
@@ -28,4 +29,4 @@ class Counter:
         plt.xlabel('Letters')
         plt.ylabel('Frequency')
         plt.title('Frequency of Letters')
-        plt.savefig('../plots/frequency.png')
+        plt.savefig(f"../plots/{self.__output}.png")
