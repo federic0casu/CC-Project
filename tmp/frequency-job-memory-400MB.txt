@@ -1,0 +1,62 @@
+###############################################################################
+	File System Counters
+		FILE: Number of bytes read=1462
+		FILE: Number of bytes written=1758025
+		FILE: Number of read operations=0
+		FILE: Number of large read operations=0
+		FILE: Number of write operations=0
+		HDFS: Number of bytes read=421819083
+		HDFS: Number of bytes written=1182
+		HDFS: Number of read operations=891
+		HDFS: Number of large read operations=0
+		HDFS: Number of write operations=10
+	Job Counters 
+		Launched map tasks=7
+		Launched reduce tasks=1
+		Other local map tasks=1
+		Data-local map tasks=6
+		Total time spent by all maps in occupied slots (ms)=200404
+		Total time spent by all reduces in occupied slots (ms)=9302
+		Total time spent by all map tasks (ms)=100202
+		Total time spent by all reduce tasks (ms)=4651
+		Total vcore-milliseconds taken by all map tasks=100202
+		Total vcore-milliseconds taken by all reduce tasks=4651
+		Total megabyte-milliseconds taken by all map tasks=25651712
+		Total megabyte-milliseconds taken by all reduce tasks=1190656
+	Map-Reduce Framework
+		Map input records=8262618
+		Map output records=182
+		Map output bytes=1092
+		Map output materialized bytes=1498
+		Input split bytes=79747
+		Combine input records=0
+		Combine output records=0
+		Reduce input groups=26
+		Reduce shuffle bytes=1498
+		Reduce input records=182
+		Reduce output records=26
+		Spilled Records=364
+		Shuffled Maps =7
+		Failed Shuffles=0
+		Merged Map outputs=7
+		GC time elapsed (ms)=2354
+		CPU time spent (ms)=54960
+		Physical memory (bytes) snapshot=2122395648
+		Virtual memory (bytes) snapshot=14956158976
+		Total committed heap usage (bytes)=1617952768
+		Peak Map Physical memory (bytes)=281190400
+		Peak Map Virtual memory (bytes)=1869942784
+		Peak Reduce Physical memory (bytes)=172675072
+		Peak Reduce Virtual memory (bytes)=1872936960
+	Shuffle Errors
+		BAD_ID=0
+		CONNECTION=0
+		IO_ERROR=0
+		WRONG_LENGTH=0
+		WRONG_MAP=0
+		WRONG_REDUCE=0
+	File Input Format Counters 
+		Bytes Read=0
+	File Output Format Counters 
+		Bytes Written=580
+###############################################################################

@@ -40,10 +40,6 @@ public class LetterCountMapper
         custom_input_split = Integer.parseInt(conf.get("CUSTOM_INPUT_SPLIT"));
         statsPath = conf.get("COUNT_MAPPERS_STATS");
 
-        // Get TaskAttemptID for unique identifier generation (if needed)
-        TaskAttemptID taskAttemptID = context.getTaskAttemptID();
-        ID = taskAttemptID.toString() + "_" + run + "_" + num_reducers + "_" + dim_dataset + "MB";
-
         startTime = System.nanoTime();
     }
 

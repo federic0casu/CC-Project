@@ -183,7 +183,7 @@ public class LetterFrequencyMain {
 
                 // Write statistics data
                 br.write(
-                        RUN + "," + time + "," + CUSTOM_INPUT_SPLIT + "," + NUM_REDUCERS + "," + DIM_DATASET + "\n"
+                        RUN + "," + time + "," + CUSTOM_INPUT_SPLIT + "," + NUM_REDUCERS + "," + (DIM_DATASET * 200) + "\n"
                 );
 
                 br.close();
@@ -193,7 +193,7 @@ public class LetterFrequencyMain {
 
                 // Write statistics data
                 br.write(
-                        RUN + "," + time + "," + CUSTOM_INPUT_SPLIT + "," + NUM_REDUCERS + "," + DIM_DATASET + "\n"
+                        RUN + "," + time + "," + CUSTOM_INPUT_SPLIT + "," + NUM_REDUCERS + "," + (DIM_DATASET * 200) + "\n"
                 );
 
                 br.close();

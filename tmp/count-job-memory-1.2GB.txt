@@ -1,0 +1,63 @@
+###############################################################################
+File System Counters
+		FILE: Number of bytes read=470969256
+		FILE: Number of bytes written=946327494
+		FILE: Number of read operations=0
+		FILE: Number of large read operations=0
+		FILE: Number of write operations=0
+		HDFS: Number of bytes read=1265457099
+		HDFS: Number of bytes written=1538
+		HDFS: Number of read operations=2659
+		HDFS: Number of large read operations=0
+		HDFS: Number of write operations=22
+	Job Counters 
+		Killed map tasks=1
+		Launched map tasks=19
+		Launched reduce tasks=1
+		Other local map tasks=1
+		Data-local map tasks=18
+		Total time spent by all maps in occupied slots (ms)=837842
+		Total time spent by all reduces in occupied slots (ms)=61290
+		Total time spent by all map tasks (ms)=418921
+		Total time spent by all reduce tasks (ms)=30645
+		Total vcore-milliseconds taken by all map tasks=418921
+		Total vcore-milliseconds taken by all reduce tasks=30645
+		Total megabyte-milliseconds taken by all map tasks=107243776
+		Total megabyte-milliseconds taken by all reduce tasks=7845120
+	Map-Reduce Framework
+		Map input records=24787854
+		Map output records=24787854
+		Map output bytes=421393518
+		Map output materialized bytes=470969340
+		Input split bytes=239091
+		Combine input records=0
+		Combine output records=0
+		Reduce input groups=1
+		Reduce shuffle bytes=470969340
+		Reduce input records=24787854
+		Reduce output records=1
+		Spilled Records=49575708
+		Shuffled Maps =19
+		Failed Shuffles=0
+		Merged Map outputs=19
+		GC time elapsed (ms)=10456
+		CPU time spent (ms)=99500
+		Physical memory (bytes) snapshot=5557678080
+		Virtual memory (bytes) snapshot=37376651264
+		Total committed heap usage (bytes)=4157603840
+		Peak Map Physical memory (bytes)=281182208
+		Peak Map Virtual memory (bytes)=1870397440
+		Peak Reduce Physical memory (bytes)=302039040
+		Peak Reduce Virtual memory (bytes)=1873264640
+	Shuffle Errors
+		BAD_ID=0
+		CONNECTION=0
+		IO_ERROR=0
+		WRONG_LENGTH=0
+		WRONG_MAP=0
+		WRONG_REDUCE=0
+	File Input Format Counters 
+		Bytes Read=0
+	File Output Format Counters 
+		Bytes Written=23
+###############################################################################
