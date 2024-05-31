@@ -120,7 +120,6 @@ class Plots:
                                 else:
                                     self.__frequency_reducers[key] = df
 
-    
     def mean_exec_time_mappers(self, job_type: str):
         """Calculate the mean execution time of the mappers based on the job type (count or frequency).
 
@@ -200,17 +199,25 @@ class Plots:
 
         # Create bar chart
         plt.figure(figsize=(10, 6))
-        plt.bar(labels_count, means_count, color='blue', label='Count Job')
-        plt.bar(labels_frequency, means_frequency, bottom=means_count, color='orange', label='Frequency Job')
+        means_count_bars = plt.bar(labels_count, means_count, color='blue', label='Count Job')
+        means_frequency_bars = plt.bar(labels_frequency, means_frequency, bottom=means_count, color='orange', label='Frequency Job')
 
         # Add title and labels
-        plt.title('Mean Execution Time of Jobs')
-        plt.ylabel('Mean Execution Time [s]')
+        plt.title('Mean Execution Time of Jobs', fontweight='bold')
+        plt.ylabel('Mean Execution Time [s]', fontweight='bold')
         plt.xticks(rotation=45)
         plt.legend()
 
+        # Add data labels
+        for bar_count, bar_frequency in zip(means_count_bars, means_frequency_bars):
+            height_count = bar_count.get_height()
+            height_frequency = bar_frequency.get_height()
+            plt.text(bar_count.get_x() + bar_count.get_width() / 2.0, height_count, f'{height_count:.2f}', ha='center', va='bottom')
+            plt.text(bar_frequency.get_x() + bar_frequency.get_width() / 2.0, height_count + height_frequency, f'{height_frequency:.2f}', ha='center', va='bottom')
+
         # Save plot
         plt.savefig(f'{self.__base_dir_plots}/mean_exec_time_jobs.png')
+        plt.close()
 
     
     def plot_mappers(self, job_type: str):
@@ -231,11 +238,12 @@ class Plots:
             plt.bar(labels, means, color=['blue', 'orange', 'green', 'red'])
 
             # Add title and labels
-            plt.title('Job Count - Mappers - Mean Execution Time by Dataset Size')
-            plt.xlabel('Dataset Size')
-            plt.ylabel('Mean Execution Time [s]')
+            plt.title('Job Count - Mappers - Mean Execution Time by Dataset Size', fontweight='bold')
+            plt.xlabel('Dataset Size', fontweight='bold')
+            plt.ylabel('Mean Execution Time [s]', fontweight='bold')
 
             plt.savefig(f'{self.__base_dir_plots}/mean_exec_time_count_mappers.png')
+            plt.close()
         else:
             mean_exec_times = {key: np.mean(values) for key, values in self.__frequency_mappers_to_plot.items()}
 
@@ -248,11 +256,12 @@ class Plots:
             plt.bar(labels, means, color=['blue', 'orange', 'green', 'red'])
 
             # Add title and labels
-            plt.title('Job Frequency - Mappers - Mean Execution Time by Dataset Size')
-            plt.xlabel('Dataset Size')
-            plt.ylabel('Mean Execution Time [s]')
+            plt.title('Job Frequency - Mappers - Mean Execution Time by Dataset Size', fontweight='bold')
+            plt.xlabel('Dataset Size', fontweight='bold')
+            plt.ylabel('Mean Execution Time [s]', fontweight='bold')
 
             plt.savefig(f'{self.__base_dir_plots}/mean_exec_time_frequency_mappers.png')
+            plt.close()
 
     
     def plot_reducers(self, job_type: str):
@@ -273,11 +282,12 @@ class Plots:
             plt.bar(labels, means, color=['blue', 'orange', 'green', 'red'])
 
             # Add title and labels
-            plt.title('Job Count - Reducers - Mean Execution Time by Dataset Size')
-            plt.xlabel('Dataset Size')
-            plt.ylabel('Mean Execution Time [s]')
+            plt.title('Job Count - Reducers - Mean Execution Time by Dataset Size', fontweight='bold')
+            plt.xlabel('Dataset Size', fontweight='bold')
+            plt.ylabel('Mean Execution Time [s]', fontweight='bold')
 
             plt.savefig(f'{self.__base_dir_plots}/mean_exec_time_count_reducers.png')
+            plt.close()
         else:
             mean_exec_times = {key: np.mean(values) for key, values in self.__frequency_reducers_to_plot.items()}
 
@@ -290,11 +300,12 @@ class Plots:
             plt.bar(labels, means, color=['blue', 'orange', 'green', 'red'])
 
             # Add title and labels
-            plt.title('Job Frequency - Reducers - Mean Execution Time by Dataset Size')
-            plt.xlabel('Dataset Size')
-            plt.ylabel('Mean Execution Time [s]')
+            plt.title('Job Frequency - Reducers - Mean Execution Time by Dataset Size', fontweight='bold')
+            plt.xlabel('Dataset Size', fontweight='bold')
+            plt.ylabel('Mean Execution Time [s]', fontweight='bold')
 
             plt.savefig(f'{self.__base_dir_plots}/mean_exec_time_frequency_reducers.png')
+            plt.close()
 
 
     def plot_mappers_and_reducers(self, job_type: str):
@@ -331,17 +342,24 @@ class Plots:
         bars2 = ax.bar(x + width/2, means_reducers, width, label='Reducers', color='orange')
 
         # Add some text for labels, title, and custom x-axis tick labels
-        ax.set_xlabel('Dataset Size')
-        ax.set_ylabel('Mean Execution Time [s]')
-        ax.set_title(title)
+        ax.set_xlabel('Dataset Size', fontweight='bold')
+        ax.set_ylabel('Mean Execution Time [s]', fontweight='bold')
+        ax.set_title(title, fontweight='bold')
         ax.set_xticks(x)
         ax.set_xticklabels(labels)
         ax.legend()
+
+        # Add data labels on top of the bars
+        for bars in [bars1, bars2]:
+            for bar in bars:
+                height = bar.get_height()
+                ax.text(bar.get_x() + bar.get_width() / 2.0, height, f'{height:.2f}', ha='center', va='bottom')
 
         plt.xticks(rotation=45)
         plt.tight_layout()
 
         plt.savefig(f'{self.__base_dir_plots}/{filename}')
+        plt.close()
 
 
 #####################################################################################################################################################
@@ -374,6 +392,7 @@ def main():
     plots.plot_reducers('frequency')
 
     plots.plot_mappers_and_reducers('count')
+    plots.plot_mappers_and_reducers('frequency')
 
 
 #####################################################################################################################################################

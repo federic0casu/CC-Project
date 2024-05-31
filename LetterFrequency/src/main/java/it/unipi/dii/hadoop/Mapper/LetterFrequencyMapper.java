@@ -18,8 +18,7 @@ import java.util.Map;
 import static it.unipi.dii.hadoop.Utils.LETTERS;
 
 
-public class LetterFrequencyMapper
-        extends Mapper<Object, Text, Text, IntWritable> {
+public class LetterFrequencyMapper extends Mapper<Object, Text, Text, IntWritable> {
 
     private Map<Character, Integer> map;
     private Configuration conf;

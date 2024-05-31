@@ -14,8 +14,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 
 
-public class LetterCountMapper
-        extends Mapper<Object, Text, Text, IntWritable> {
+public class LetterCountMapper extends Mapper<Object, Text, Text, IntWritable> {
 
     private final static String TOTAL_COUNT = "letter_count";
     private final Text totalCountKey = new Text(TOTAL_COUNT);

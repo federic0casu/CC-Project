@@ -22,7 +22,7 @@ public class Utils {
              BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                if (line.startsWith("letter_count")) {
+                if (line.startsWith("COUNT")) {
                     // Extract value after "letter_count"
                     String[] parts = line.split("\\s+");
                     if (parts.length == 2) {
@@ -33,8 +33,8 @@ public class Utils {
                     }
                 }
             }
-            // If "letter_count" line not found
-            System.err.println("'letter_count' value not found in the output file file");
+            // If "COUNT" line not found
+            System.err.println("'COUNT' value not found in the output file file");
             return -1;
         }
     }
