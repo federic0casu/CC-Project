@@ -85,11 +85,11 @@ public class LetterFrequencyOptMain {
 
         // define mapper's output key-value
         frequencyJob.setMapOutputKeyClass(Text.class);
-        frequencyJob.setMapOutputValueClass(IntWritable.class);
+        frequencyJob.setMapOutputValueClass(DoubleWritable.class);
 
         // define reducer's output key-value
         frequencyJob.setOutputKeyClass(Text.class);
-        frequencyJob.setOutputValueClass(IntWritable.class);
+        frequencyJob.setOutputValueClass(DoubleWritable.class);
 
         // DIM_DATASET can be 1, 2, 4, or 6
         for (int i = 1; i <= DIM_DATASET; i++)

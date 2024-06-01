@@ -1,20 +1,20 @@
 package it.unipi.dii.hadoop.Reducer;
 
-import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import java.io.IOException;
 
 public class LetterFrequencyReducer
-        extends Reducer<Text, IntWritable, Text, IntWritable> {
+        extends Reducer<Text, DoubleWritable, Text, DoubleWritable> {
 
     @Override
-    protected void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
-        int occurrences = 0;
-        for (IntWritable val : values) {
-            occurrences += val.get();
+    protected void reduce(Text key, Iterable<DoubleWritable> values, Context context) throws IOException, InterruptedException {
+        double intermediate_frequencies = 0;
+        for (DoubleWritable val : values) {
+            intermediate_frequencies += val.get();
         }
-        context.write(key, new IntWritable(occurrences));
+        context.write(key, new DoubleWritable(intermediate_frequencies));
     }
 }
