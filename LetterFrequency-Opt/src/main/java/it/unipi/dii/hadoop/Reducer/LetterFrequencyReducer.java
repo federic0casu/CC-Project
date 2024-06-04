@@ -11,10 +11,10 @@ public class LetterFrequencyReducer
 
     @Override
     protected void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
-        int occurrences = 0;
+        Integer intermidate_sum = 0;
         for (IntWritable val : values) {
-            occurrences += val.get();
+            intermidate_sum += val.get();
         }
-        context.write(key, new IntWritable(occurrences));
+        context.write(key, new IntWritable(intermidate_sum));
     }
 }

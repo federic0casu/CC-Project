@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 
 public class LetterFrequencyReducer
-        extends Reducer<Text, IntWritable, Text, DoubleWritable> {
+        extends Reducer<Text, DoubleWritable, Text, DoubleWritable> {
 
     private Configuration conf;
     private String statsPath;
@@ -42,12 +42,13 @@ public class LetterFrequencyReducer
     }
 
     @Override
-    protected void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
-        int occurrences = 0;
-        for (IntWritable val : values) {
-            occurrences += val.get();
+    protected void reduce(Text key, Iterable<DoubleWritable> values, Context context) throws IOException, InterruptedException {
+        // int occurrences = 0;
+        double intermediate_frequencies = 0;
+        for (DoubleWritable val : values) {
+            intermediate_frequencies += val.get();
         }
-        context.write(key, new DoubleWritable((double) occurrences / count));
+        context.write(key, new DoubleWritable(intermediate_frequencies));
     }
 
     @Override

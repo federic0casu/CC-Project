@@ -131,7 +131,7 @@ public class LetterFrequencyMain {
 
         // define mapper's output key-value
         frequencyJob.setMapOutputKeyClass(Text.class);
-        frequencyJob.setMapOutputValueClass(IntWritable.class);
+        frequencyJob.setMapOutputValueClass(DoubleWritable.class);
 
         // define reducer's output key-value
         frequencyJob.setOutputKeyClass(Text.class);

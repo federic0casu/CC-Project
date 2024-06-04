@@ -14,6 +14,8 @@ import static it.unipi.dii.hadoop.Utils.LETTERS;
 public class LetterFrequencyMapper
         extends Mapper<Object, Text, Text, IntWritable> {
 
+    // private Map<Character, Integer> map;
+    private final Text letter = new Text();
     private Map<Character, Integer> map;
 
     @Override
@@ -28,7 +30,7 @@ public class LetterFrequencyMapper
     }
 
     @Override
-    protected void map(Object key, Text value, Context context) {
+    protected void map(Object key, Text value, Context context)throws IOException, InterruptedException {
         // Get the input split
         String[] words = value.toString().split("\\s+");
 
@@ -36,8 +38,9 @@ public class LetterFrequencyMapper
             char[] chars = word.toCharArray();
             for (int i = 0; i < word.length(); i++) {
                 char tmp = Character.toLowerCase(chars[i]);
-                if (LETTERS.contains(tmp))
+                if (LETTERS.contains(tmp)) {
                     map.put(tmp, map.get(tmp) + 1);
+                }
             }
         }
     }
