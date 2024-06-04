@@ -33,7 +33,7 @@ public class RelativeLetterFrequencyMapper extends Mapper<Object, Text, Text, Do
     @Override
     public void cleanup(Context context) throws IOException, InterruptedException {
         for (Map.Entry<String, Double> entry : relativeFrequencies.entrySet()) {
-            double relativeFrequency = entry.getValue() / totalLetterOccurrences;
+            double relativeFrequency = (entry.getValue() / totalLetterOccurrences);
             context.write(new Text(entry.getKey()), new DoubleWritable(relativeFrequency));
         }
     }

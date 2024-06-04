@@ -21,7 +21,7 @@ import static it.unipi.dii.hadoop.Utils.LETTERS;
 
 public class LetterFrequencyMapper extends Mapper<Object, Text, Text, DoubleWritable> {
 
-    private Map<Character, Integer> map;
+    private Map<Character, Double> map;
     private Configuration conf;
     private String statsPath;
     private long startTime;
@@ -29,22 +29,24 @@ public class LetterFrequencyMapper extends Mapper<Object, Text, Text, DoubleWrit
     private int num_reducers;
     private int dim_dataset;
     private int run;
-    private final DoubleWritable intermediateFrequency = new DoubleWritable();
     private final Text letter = new Text();
+    private Integer count = 0;
 
     @Override
     protected void setup(Context context) throws IOException, InterruptedException {
         super.setup(context);
         conf = context.getConfiguration();
 
-        long count = Integer.parseInt(conf.get("LETTER_COUNT"));
+        count = Integer.parseInt(conf.get("LETTER_COUNT"));
         run = Integer.parseInt(conf.get("RUN"));
         num_reducers = Integer.parseInt(conf.get("NUM_REDUCERS"));
         dim_dataset = Integer.parseInt(conf.get("DIM_DATASET"));
         custom_input_split = Integer.parseInt(conf.get("CUSTOM_INPUT_SPLIT"));
         statsPath = conf.get("FREQUENCY_MAPPERS_STATS");
-        
-        intermediateFrequency.set((double) 1 / count);
+        map = new HashMap<>();
+        for(Character item: LETTERS) {
+            map.put(item, 0.0);
+        }
         startTime = System.nanoTime();
     }
 
@@ -58,8 +60,7 @@ public class LetterFrequencyMapper extends Mapper<Object, Text, Text, DoubleWrit
             for (int i = 0; i < word.length(); i++) {
                 char tmp = Character.toLowerCase(chars[i]);
                 if (LETTERS.contains(tmp)) {
-                    letter.set(String.valueOf(tmp));
-                    context.write(letter, intermediateFrequency);
+                    map.put(tmp, map.get(tmp) + (Double)(1 / Double.valueOf(count)));
                 }
             }
         }
@@ -67,6 +68,13 @@ public class LetterFrequencyMapper extends Mapper<Object, Text, Text, DoubleWrit
 
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
+
+        for(Map.Entry<Character, Double> entry: map.entrySet()) {
+            context.write(
+                    new Text(entry.getKey().toString()),
+                    new DoubleWritable(entry.getValue())
+            );
+        }
         double execTime = (System.nanoTime() - startTime) / 1_000_000_000.0;
         writeStats(context, execTime);
     }

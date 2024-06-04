@@ -1,6 +1,6 @@
 package it.unipi.dii.hadoop.Mapper;
 
-import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
@@ -12,21 +12,21 @@ import static it.unipi.dii.hadoop.Utils.LETTERS;
 
 
 public class LetterFrequencyMapper
-        extends Mapper<Object, Text, Text, DoubleWritable> {
+        extends Mapper<Object, Text, Text, IntWritable> {
 
     // private Map<Character, Integer> map;
-    private final DoubleWritable intermediateFrequency = new DoubleWritable();
     private final Text letter = new Text();
+    private Map<Character, Integer> map;
 
     @Override
     protected void setup(Context context) throws IOException, InterruptedException {
         super.setup(context);
 
         // Initialize map
-        // map = new HashMap<>();
-        // for(Character item: LETTERS) {
-        //     map.put(item, 0);
-        // }
+        map = new HashMap<>();
+        for(Character item: LETTERS) {
+            map.put(item, 0);
+        }
     }
 
     @Override
@@ -38,11 +38,8 @@ public class LetterFrequencyMapper
             char[] chars = word.toCharArray();
             for (int i = 0; i < word.length(); i++) {
                 char tmp = Character.toLowerCase(chars[i]);
-                // if (LETTERS.contains(tmp))
-                //     map.put(tmp, map.get(tmp) + 1);
                 if (LETTERS.contains(tmp)) {
-                    letter.set(String.valueOf(tmp));
-                    context.write(letter, intermediateFrequency);
+                    map.put(tmp, map.get(tmp) + 1);
                 }
             }
         }
@@ -50,11 +47,11 @@ public class LetterFrequencyMapper
 
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
-        // for(Map.Entry<Character, Integer> entry: map.entrySet()) {
-        //     context.write(
-        //             new Text(entry.getKey().toString()),
-        //             new IntWritable(entry.getValue())
-        //     );
-        // }
+        for(Map.Entry<Character, Integer> entry: map.entrySet()) {
+            context.write(
+                    new Text(entry.getKey().toString()),
+                    new IntWritable(entry.getValue())
+            );
+        }
     }
 }
